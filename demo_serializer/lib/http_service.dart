@@ -17,9 +17,7 @@ class HttpService {
     Response response;
 
     try {
-      print("myLog: get request initiated");
       response = await _dio.get(endPoint);
-      print("myLog: response is returned: $response");
     } on DioError catch (e) {
       print(e.message);
       throw Exception(e.message);
