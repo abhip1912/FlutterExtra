@@ -65,7 +65,7 @@ class _HomeState extends State<Home> {
     DocumentSnapshot docSnapshot = await usersCollectionRef.doc(user.id).get();
 
     if (!docSnapshot.exists) {
-      final String userName = await Navigator.push(
+      final String userName = await Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (ctx) => CreateAccount(),

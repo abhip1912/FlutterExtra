@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_share/pages/home.dart';
 import 'package:flutter_share/widgets/header.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -12,8 +13,20 @@ class _CreateAccountState extends State<CreateAccount> {
   String userName;
 
   submitUsername() {
-    _formKey.currentState.save();
-    Navigator.pop(context, userName);
+    final createUserNameForm = _formKey.currentState;
+    final bool isValid = createUserNameForm.validate();
+    if (isValid) {
+      createUserNameForm.save();
+      final SnackBar snackBar = SnackBar(content: Text("Welcome $userName"));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (ctx) => Home(),
+        ),
+        result: userName,
+      );
+    }
   }
 
   @override
@@ -42,8 +55,17 @@ class _CreateAccountState extends State<CreateAccount> {
               padding: EdgeInsets.all(16.0),
               child: Center(
                 child: Form(
+                  autovalidateMode: AutovalidateMode.always,
                   key: _formKey,
                   child: TextFormField(
+                    validator: (value) {
+                      if (value.trim().length < 3 || value == null) {
+                        return "username too short!";
+                      } else if (value.trim().length > 12) {
+                        return "username is too big";
+                      }
+                      return null;
+                    },
                     onSaved: (val) => userName = val,
                     decoration: InputDecoration(
                         border: OutlineInputBorder(),
