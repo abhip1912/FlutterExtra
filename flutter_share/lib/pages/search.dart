@@ -15,15 +15,25 @@ class _SearchState extends State<Search> {
   Future<QuerySnapshot> futureSearchResult;
   TextEditingController serachBar = TextEditingController();
 
-  handleSearch(val) {
-    final Future<QuerySnapshot> users = usersCollectionRef
-        .where(
-          'displayName',
-          isGreaterThanOrEqualTo: val,
-        )
-        .get();
+  handleSearch(String val) {
+    if (val.length > 0) {
+      final Future<QuerySnapshot> users = usersCollectionRef
+          .where(
+            'displayName',
+            isGreaterThanOrEqualTo: val,
+          )
+          .get();
+      setState(() {
+        futureSearchResult = users;
+      });
+    }
+  }
+
+  searchBarClear() {
+    print("SearchBar clear called");
+    serachBar.clear();
     setState(() {
-      futureSearchResult = users;
+      futureSearchResult = null;
     });
   }
 
@@ -41,7 +51,7 @@ class _SearchState extends State<Search> {
             hintText: "Search for a user...",
             suffixIcon: IconButton(
               icon: Icon(Icons.clear),
-              onPressed: () => serachBar.clear(),
+              onPressed: searchBarClear,
             ),
           ),
         ),
