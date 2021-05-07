@@ -13,18 +13,37 @@ class Timeline extends StatefulWidget {
 class _TimelineState extends State<Timeline> {
   @override
   void initState() {
-    getUsers();
+    // getUsers();
     // getUserById();
+    // createUser();
+    // updateUser();
+    deleteUser();
     super.initState();
   }
 
-  getUsers() async {
-    final querySnapshot = await usersCollectionRef
-        .orderBy('postCount', descending: true)
-        .limit(5)
-        .get();
-    querySnapshot.docs.forEach(
-        (docSnapshot) => print("${docSnapshot.id} => ${docSnapshot.data()}"));
+  // getUsers() async {
+  //   final querySnapshot = await usersCollectionRef.get();
+  // }
+
+  createUser() {
+    usersCollectionRef
+        .doc('asdfasdf')
+        .set({'username': 'heheBoi', 'postCount': 69, 'isAdmin': false});
+  }
+
+  updateUser() async {
+    final docRef = await usersCollectionRef.doc('asdfasdf').get();
+    if (docRef.exists) {
+      docRef.reference
+          .update({'username': 'YOYOBoi', 'postCount': 69, 'isAdmin': false});
+    }
+  }
+
+  deleteUser() async {
+    final docRef = await usersCollectionRef.doc('asdfasdf').get();
+    if (docRef.exists) {
+      docRef.reference.delete();
+    }
   }
 
   getUserById() async {
@@ -37,7 +56,21 @@ class _TimelineState extends State<Timeline> {
   Widget build(context) {
     return Scaffold(
       appBar: header(context),
-      body: linearProgress(context),
+      body: StreamBuilder(
+        stream: usersCollectionRef.snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return circularProgress(context);
+          }
+          final users = snapshot.data.docs;
+          return ListView.builder(
+            itemCount: users.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Text(users[index]['username']);
+            },
+          );
+        },
+      ),
     );
   }
 }
