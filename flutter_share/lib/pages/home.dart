@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_share/models/user.dart';
 import 'package:flutter_share/pages/activity_feed.dart';
+import 'package:flutter_share/pages/create_account.dart';
 import 'package:flutter_share/pages/profile.dart';
 import 'package:flutter_share/pages/search.dart';
 import 'package:flutter_share/pages/timeline.dart';
@@ -8,6 +11,9 @@ import 'package:flutter_share/pages/upload.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
+final usersCollectionRef = FirebaseFirestore.instance.collection('users');
+final DateTime timestamp = DateTime.now();
+User currentUser;
 
 class Home extends StatefulWidget {
   @override
@@ -17,6 +23,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   PageController pageController;
   int pageIndex = 0;
+  bool isAuth = false;
 
   @override
   void initState() {
@@ -41,6 +48,7 @@ class _HomeState extends State<Home> {
 
   handleSignIn(account) {
     if (account != null) {
+      createUserInFirestore();
       print("User sign in with $account");
       setState(() {
         isAuth = true;
@@ -52,7 +60,33 @@ class _HomeState extends State<Home> {
     }
   }
 
-  bool isAuth = false;
+  createUserInFirestore() async {
+    final GoogleSignInAccount user = googleSignIn.currentUser;
+    DocumentSnapshot docSnapshot = await usersCollectionRef.doc(user.id).get();
+
+    if (!docSnapshot.exists) {
+      final String userName = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (ctx) => CreateAccount(),
+          settings: RouteSettings(arguments: user),
+        ),
+      );
+      usersCollectionRef.doc(user.id).set({
+        "id": user.id,
+        "username": userName,
+        "photoUrl": user.photoUrl,
+        "email": user.email,
+        "displayName": user.displayName,
+        "bio": "",
+        "timestamp": timestamp,
+      });
+      docSnapshot = await usersCollectionRef.doc(user.id).get();
+      currentUser = User.fromDoc(docSnapshot);
+      print("Created User => $currentUser");
+      print("Created user's Username => ${currentUser.username}");
+    }
+  }
 
   login() {
     googleSignIn.signIn();
@@ -83,7 +117,8 @@ class _HomeState extends State<Home> {
         controller: pageController,
         onPageChanged: onPageChange,
         children: [
-          Timeline(),
+          // Timeline(),
+          ElevatedButton(onPressed: logout, child: Text("logout")),
           ActivityFeed(),
           Upload(),
           Search(),

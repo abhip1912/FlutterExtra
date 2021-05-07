@@ -17,7 +17,7 @@ class _TimelineState extends State<Timeline> {
     // getUserById();
     // createUser();
     // updateUser();
-    deleteUser();
+    // deleteUser();
     super.initState();
   }
 
